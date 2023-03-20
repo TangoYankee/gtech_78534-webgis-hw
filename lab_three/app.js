@@ -7,4 +7,9 @@ addEventListener('DOMContentLoaded', async () => {
 
     const response = await fetch('data/tract_demographics_acs_2020.geojson');
     const tractDemographics = await response.json();
+
+    L.geoJSON(tractDemographics, {
+        fillColor: "#ff0000",
+        fillOpacity: 0.5 
+    }).addTo(map);
 });
