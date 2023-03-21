@@ -1,5 +1,3 @@
-const TICKS = [0, 100, 1];
-
 const styleTractDemographics = (feature)=> {
     const totalPopulation = feature.properties.total;
     let fillColor = null;
@@ -17,14 +15,12 @@ const styleTractDemographics = (feature)=> {
     }
     return { 
         fillColor,
+        fillOpacity: 0.75,
         color: "#222347",
-        fillOpacity: .75,
+        opacity: 0.75,
         weight: 0.75,
-        opacity: .75,
     }
 }
-
-const resetStyle = () => {return { fillColor: "#ff0000"}};
 
 window.addEventListener('DOMContentLoaded', async () => {
     const map = L.map('map').setView([40.74, -74.0], 13);
@@ -33,9 +29,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
+    // 'Await' here is paired with the 'async' keyword in the function definition above
+    // It ensures the script will not continue without first retrieving and
+    // extracting the geojson file.
     const response = await fetch('data/tract_demographics_acs_2020.geojson');
     const tractDemographics = await response.json();
 
+    // Pass the style function from above, to color the tracts based on their
+    // population totals. Save a reference to the created layers, to update
+    // the layers later.
     const tractDemographicsGroup = L.geoJSON(tractDemographics, {
         style: styleTractDemographics
     }).addTo(map);
@@ -44,40 +46,50 @@ window.addEventListener('DOMContentLoaded', async () => {
     const maxSelector = document.getElementById('maxPopulation');
     const filterMessage = document.getElementById('filterMessage');
 
-    const setFilterMessage = () => {
-        if (minSelector.value >= maxSelector.value) {
-            filterMessage.innerText = "Minimum value must be less than maximum";
-        } else {
-            filterMessage.innerText = "";
-        }
+    // Define the possible variations of the style outside the function
+    // they are used. This way, they are only defined once.
+    // These styles will cause each feature to appear 'hidden' or 'shown'
+    const hidden = {
+        fillOpacity: 0,
+        opacity: 0,
     }
 
-    minSelector.addEventListener('change', (e) => {
-        console.log('min event', e);
-        console.log('minSelector', minSelector.value);
-        setFilterMessage();
-    });
-    maxSelector.addEventListener('change', (e) => {
-        console.log('max event', e);
-        setFilterMessage();
-    });
+    const shown = {
+        fillOpacity: 0.75,
+        opacity: 0.75
+    }
 
-    // clicker.addEventListener('click', () => {
-    //     console.log("I've been clicked!");
-    //     tractDemographicsGroup.getLayers().forEach(layer => {
-    //         const totalPopulation = layer.feature.properties.total;
-    //         const minPopulation = 5000;
-    //         if (totalPopulation < minPopulation) {
-    //             layer.setStyle({
-    //                 fillOpacity: 0,
-    //                 opacity: 0
-    //             });
-    //         } else {
-    //             layer.setStyle({
-    //                 fillOpacity: 0.75,
-    //                 opacity: 0.75
-    //             });
-    //         }
-    //     });
-    // });
+    // Create a function that updates the styles, based on the range of 'shown' features 
+    // Function is run whenever an input is changed
+    const setFilter = () => {
+        // min and max Selector variables are references to the selector objects in the DOM.
+        // They have access to the latest updates to the selectors
+        const minValue = minSelector.value;
+        const maxValue = maxSelector.value;
+        let message = '';
+        // If there is no maximum value, then we know the filter selection is valid
+        // We can also filter only based on the min value
+        if (maxValue === null) {
+            tractDemographicsGroup.getLayers().forEach(layer => {
+                const totalPopulation = layer.feature.properties.total;
+                const opacity = (totalPopulation >= minValue) ? shown : hidden;
+                layer.setStyle(opacity);
+            });
+        // If there is a maximum value, then the min selector must be below it.
+        // When it is, the appropriate range may be applied
+        } else if ( minSelector.value < maxSelector.value) {
+            tractDemographicsGroup.getLayers().forEach(layer => {
+                const totalPopulation = layer.feature.properties.total;
+                const opacity = (totalPopulation >= minValue && totalPopulation <= maxValue) ? shown : hidden;
+                layer.setStyle(opacity);
+            });
+        } else {
+            // If the selected range is invalid, set the message to give this feedback
+            message = "Minimum value must be less than maximum";
+        }
+        filterMessage.innerText = message;
+    }
+
+    minSelector.addEventListener('change', setFilter);
+    maxSelector.addEventListener('change', setFilter);
 });
