@@ -40,25 +40,44 @@ window.addEventListener('DOMContentLoaded', async () => {
         style: styleTractDemographics
     }).addTo(map);
 
-    const clicker = document.getElementById("clicker");
-    console.log(clicker);
-    let isShown = true;
-    clicker.addEventListener('click', () => {
-        console.log("I've been clicked!");
-        tractDemographicsGroup.getLayers().forEach(layer => {
-            const totalPopulation = layer.feature.properties.total;
-            const minPopulation = 5000;
-            if (totalPopulation < minPopulation) {
-                layer.setStyle({
-                    fillOpacity: 0,
-                    opacity: 0
-                });
-            } else {
-                layer.setStyle({
-                    fillOpacity: 0.75,
-                    opacity: 0.75
-                });
-            }
-        });
+    const minSelector = document.getElementById('minPopulation');
+    const maxSelector = document.getElementById('maxPopulation');
+    const filterMessage = document.getElementById('filterMessage');
+
+    const setFilterMessage = () => {
+        if (minSelector.value >= maxSelector.value) {
+            filterMessage.innerText = "Minimum value must be less than maximum";
+        } else {
+            filterMessage.innerText = "";
+        }
+    }
+
+    minSelector.addEventListener('change', (e) => {
+        console.log('min event', e);
+        console.log('minSelector', minSelector.value);
+        setFilterMessage();
     });
+    maxSelector.addEventListener('change', (e) => {
+        console.log('max event', e);
+        setFilterMessage();
+    });
+
+    // clicker.addEventListener('click', () => {
+    //     console.log("I've been clicked!");
+    //     tractDemographicsGroup.getLayers().forEach(layer => {
+    //         const totalPopulation = layer.feature.properties.total;
+    //         const minPopulation = 5000;
+    //         if (totalPopulation < minPopulation) {
+    //             layer.setStyle({
+    //                 fillOpacity: 0,
+    //                 opacity: 0
+    //             });
+    //         } else {
+    //             layer.setStyle({
+    //                 fillOpacity: 0.75,
+    //                 opacity: 0.75
+    //             });
+    //         }
+    //     });
+    // });
 });
