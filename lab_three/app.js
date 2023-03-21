@@ -1,4 +1,6 @@
-const styleTractDemograpics = (feature)=> {
+const TICKS = [0, 100, 1];
+
+const styleTractDemographics = (feature)=> {
     const totalPopulation = feature.properties.total;
     let fillColor = null;
 
@@ -21,7 +23,10 @@ const styleTractDemograpics = (feature)=> {
         opacity: .75,
     }
 }
-addEventListener('DOMContentLoaded', async () => {
+
+const resetStyle = () => {return { fillColor: "#ff0000"}};
+
+window.addEventListener('DOMContentLoaded', async () => {
     const map = L.map('map').setView([40.74, -74.0], 13);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -31,7 +36,29 @@ addEventListener('DOMContentLoaded', async () => {
     const response = await fetch('data/tract_demographics_acs_2020.geojson');
     const tractDemographics = await response.json();
 
-    L.geoJSON(tractDemographics, {
-        style: styleTractDemograpics
+    const tractDemographicsGroup = L.geoJSON(tractDemographics, {
+        style: styleTractDemographics
     }).addTo(map);
+
+    const clicker = document.getElementById("clicker");
+    console.log(clicker);
+    let isShown = true;
+    clicker.addEventListener('click', () => {
+        console.log("I've been clicked!");
+        tractDemographicsGroup.getLayers().forEach(layer => {
+            const totalPopulation = layer.feature.properties.total;
+            const minPopulation = 5000;
+            if (totalPopulation < minPopulation) {
+                layer.setStyle({
+                    fillOpacity: 0,
+                    opacity: 0
+                });
+            } else {
+                layer.setStyle({
+                    fillOpacity: 0.75,
+                    opacity: 0.75
+                });
+            }
+        });
+    });
 });
