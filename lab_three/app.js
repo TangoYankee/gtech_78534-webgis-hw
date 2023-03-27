@@ -79,7 +79,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         // If there is a maximum value, then the min selector must be below it.
         // When it is, the appropriate range may be applied
-        } else if ( minSelector.value < maxSelector.value) {
+        } else if ( minValue < maxValue) {
             tractDemographicsGroup.getLayers().forEach(layer => {
                 const totalPopulation = layer.feature.properties.total;
                 const opacity = (totalPopulation >= minValue && totalPopulation <= maxValue) ? shown : hidden;
