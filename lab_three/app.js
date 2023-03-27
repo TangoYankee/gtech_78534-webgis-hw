@@ -64,8 +64,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const setFilter = () => {
         // min and max Selector variables are references to the selector objects in the DOM.
         // They have access to the latest updates to the selectors
-        const minValue = minSelector.value;
-        const maxValue = maxSelector.value;
+        let minValue = minSelector.value;
+        let maxValue = maxSelector.value;
+        minValue = minValue === 'null' ? null : +minValue;
+        maxValue = maxValue === 'null' ? null : +maxValue;
         let message = '';
         // If there is no maximum value, then we know the filter selection is valid
         // We can also filter only based on the min value
